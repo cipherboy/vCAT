@@ -1,0 +1,106 @@
+<DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf8">
+    <title>vCAT</title>
+    <meta name="description" content="A suite of tools for handling decryption of Vigenere ciphers in the browser">
+    <meta name="author" content="Alexander Scheel">
+    <meta name="viewport" content="width=320, initial-scale=1">
+    <link rel="stylesheet" href="css/main.css">
+  </head>
+  <body>
+    <section>
+      <h1>vCAT</h1>
+      <h2>Vigenere Cipher Analaysis Tool</h2>
+      <p>
+        A tool for exploring the cryptanalysis of single or known first keyword Vigenere ciphers using Turing's analysis and a small dictionary.
+        If you don't have a ciphertext, skip to the <a href="#encrypt">end</a> to generate one!
+      </p>
+      <!--
+      TODO: Add optional text regarding definition of Vigenere ciphers
+      <p class="expandable">
+        Alternate text regarding changing stuffs. 
+      </p>
+      -->
+    </section>
+    <section>
+      <h3>Ciphertext</h3>
+      <textarea id="source-ciphertext" autocomplete="off" spellcheck="false" placeholder="Enter your ciphertext here"></textarea>
+    </section>
+    <section>
+      <h3>Vigenere Table</h3>
+      <p>Leave blank for the standard table (default).</p>
+      <!--
+      TODO
+      <p class="expandable">
+        This method is used in the KRYPTOS sculpture for the first two cipherblocks. 
+      </p>
+      -->
+      <input id="source-tableword" value="" placeholder="Table keyword">
+      <pre id="sink-table" onclick="selectText('sink-table');">&nbsp;</pre>
+    </section>
+    <section>
+      <h3>Turing's Analysis</h3>
+      <p>Guesses for length of message's keyword.</p>
+      <input id="source-length" placeholder="Keyword length" type="number" list="true" min="1" max="30" step="1" value="1">
+      <pre id="sink-turings" onclick="selectText('sink-turings');">&nbsp;</pre>
+    </section>
+    <section>
+      <h3>[optional] Keyword help</h3>
+      <p>Use the current analysis to build a regex to match words in the dictionary.</p>
+      <input id="source-regex" placeholder="Keyword regex" type="text" autocomplete="off" autocorrect="off">
+      <pre id="sink-suggestions" onclick="selectText('sink-suggestions');">&nbsp;</pre>
+    </section>
+    <section>
+      <h3>Keyword</h3>
+      <p>Enter a keyword below to decrypt the ciphertext.</p>
+      <input id="source-keyword" placeholder="Keyword" type="text" autocomplete="off" autocorrect="off">
+      <pre id="sink-decrypted" onclick="selectText('sink-decrypted');">&nbsp;</pre>
+    </section>
+    <section id="encrypt">
+      <h3>Encrypt</h3>
+      <p>Enter a text below to encrypt using the keyword.</p>
+      <textarea id="source-plaintext" autocomplete="on" spellcheck="true" placeholder="Enter your plaintext here"></textarea>
+      <pre id="sink-encrypted" onclick="selectText('sink-encrypted');">&nbsp;</pre>
+    </section>
+    <footer>
+      <hr>
+      <p>
+        Copyright (C) 2015 <a href="mailto:cipherdev@gmail.com">Alexander Scheel</a><br>
+        All rights reserved.<br>
+        Licensed under GPLv3.
+      </p>
+    </footer>
+    <script src="js/app.js"></script>
+    <script type="text/javascript">
+      function selectText(containerid) {
+        var node = document.getElementById(containerid);
+
+        if (document.selection) {
+          var range = document.body.createTextRange();
+          range.moveToElementText(node);
+          range.select();
+        } else if (window.getSelection) {
+          var range = document.createRange();
+          range.selectNodeContents(node);
+          window.getSelection().removeAllRanges();
+          window.getSelection().addRange(range);
+        }
+      }
+    </script>
+    <script>
+      function ready(func) {
+        if (document.readyState != 'loading'){
+          func();
+        } else {
+          document.addEventListener('DOMContentLoaded', func);
+        }
+      }
+      
+      ready(function() {
+        site = new app();
+        site.init();
+      });
+    </script>
+  </body>
+</html>
