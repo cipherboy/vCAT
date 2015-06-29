@@ -117,7 +117,9 @@ function app() {
       }
     }
     
-    this.sources['match'].value = regex.toString();
+    if (regex != Array(this.tur.length+1).join('.')) {
+      this.sources['match'].value = regex.toString();
+    }
   };
   
   this.decrypt = function() {
@@ -219,10 +221,12 @@ function app() {
     var width = this.sources['turing'].value.replace(/[^0-9]/g, '') == undefined ? 10 : parseInt(this.sources['turing'].value.replace(/[^0-9]/g, ''));
     this.sinks['match'].innerHTML = '';
     
-    for (var loc in this.dictionary) {
-      if (this.dictionary[loc].length == width) {
-        if (this.dictionary[loc].match(re)) {
-          this.sinks['match'].innerHTML += ' ' + this.dictionary[loc];
+    if (regex != '') {
+      for (var loc in this.dictionary) {
+        if (this.dictionary[loc].length == width) {
+          if (this.dictionary[loc].match(re)) {
+            this.sinks['match'].innerHTML += ' ' + this.dictionary[loc];
+          }
         }
       }
     }
@@ -280,7 +284,6 @@ function app() {
     
     this.sources['turing'].addEventListener('change', this.eventHandleTuring.bind(this));
     this.sources['ciphertext'].addEventListener('change', this.eventHandleTuring.bind(this));
-    this.sources['keyword'].addEventListener('change', this.eventHandleTuring.bind(this));
     
     this.sources['match'].addEventListener('change', this.eventHandleMatch.bind(this));
   };
@@ -296,7 +299,6 @@ function app() {
     
     this.sources['turing'].removeEventListener('change', this.eventHandleTuring.bind(this));
     this.sources['ciphertext'].removeEventListener('change', this.eventHandleTuring.bind(this));
-    this.sources['keyword'].removeEventListener('change', this.eventHandleTuring.bind(this));
     
     this.sources['match'].removeEventListener('change', this.eventHandleMatch.bind(this));
   };
