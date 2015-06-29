@@ -3,7 +3,7 @@ body,html {
   padding: 0;
   border: none;
   
-  width: 100%;
+  width: 99%;
   max-width: 800px;
   margin: 0 auto;
   
@@ -54,6 +54,13 @@ pre {
   font-size: 1em;
   
   overflow-x: auto;
+}
+
+#sink-suggestions {
+  width: 100%;
+  max-width: 800px;
+  
+  word-wrap: normal;
 }
 
 pre#sink-decrypted, pre#sink-encrypted {
