@@ -3,10 +3,12 @@
 function app() {
   this.dictionary = [];
   this.alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+  this.frequencies = { 'A' : 80.4, 'B' : 14.8, 'C' : 33.4, 'D' : 38.2, 'E' : 124.9, 'F' : 24.0, 'G' : 18.7, 'H' : 50.5, 'I' : 75.7, 'J' : 1.6, 'K' : 5.4,  'L' : 40.7, 'M' : 25.1, 'N' : 72.3, 'O' : 76.4, 'P' : 21.4, 'Q' : 1.2,  'R' : 62.8, 'S' : 65.1, 'T' : 92.8, 'U' : 27.3, 'V' : 10.5, 'W' : 16.8, 'X' :  2.3, 'Y' : 16.6, 'Z' : 0.9 };
+  this.bans = {};
   
-  this.encrypt = {};
-  this.decrypt = {};
-  this.turing = {};
+  this.enc = {};
+  this.dec = {};
+  this.tur = [];
   this.sources = {};
   this.sinks = {};
   
@@ -29,9 +31,22 @@ function app() {
       ciphertext: document.getElementById('sink-encrypted'),
     }
     
+    this.initTuring();
     this.buildTable();
     this.fetchDictionary();
     this.bindEvents();
+  };
+  
+  this.initTuring = function() {
+    for (var loc in this.frequencies) {
+      this.frequencies[loc] /= 1000;
+    }
+
+    for (var loc in this.frequencies) {
+      var tmp = (25 * this.frequencies[loc]) / (1 - this.frequencies[loc]);
+      tmp = (20*Math.log(tmp)) / Math.log(10);
+      this.bans[parseInt(ord(loc) - ord('A'))] = parseInt(tmp);
+    }
   };
   
   this.fetchDictionary = function() {
@@ -77,9 +92,9 @@ function app() {
     var working = this.cloneArray(initial);
     var text = "";
     
-    for (var loc in initial) {
-      this.encrypt[initial[loc]] = this.mapToObject(initial, working);
-      this.decrypt[initial[loc]] = this.mapToObject(working, initial);
+    for (var loc in initial) { 
+      this.enc[initial[loc]] = this.mapToObject(initial, working);
+      this.dec[initial[loc]] = this.mapToObject(working, initial);
       text += working.join(" ") + "<br>";
       
       var letter = working.shift();
@@ -89,10 +104,21 @@ function app() {
     this.sinks['table'].innerHTML = text;
   };
   
-  this.turing = function() {
-    var textarray = this.sources['ciphertext'].value.split('');
+  this.buildRegex = function() {
+    var regex = '';
+    for (var loc in this.tur) {
+      var place = this.tur[loc];
+      if (place.length == 1) {
+        regex += place[0];
+      } else if (place.length > 1) {
+        regex += '[' + place.join('') + ']';
+      } else {
+        regex += '.';
+      }
+    }
     
-  }
+    this.sources['match'].value = regex.toString();
+  };
   
   this.decrypt = function() {
     var textarray = this.sources['ciphertext'].value.split('');
@@ -104,7 +130,7 @@ function app() {
       var downcase = character == textarray[loc] ? false : true;
       
       if (this.alphabet.indexOf(character) != -1) {
-        var letter = this.decrypt[keyarray[kloc]][character];
+        var letter = this.dec[keyarray[kloc]][character];
         
         if (downcase) {
           letter = letter.toLowerCase();
@@ -130,7 +156,7 @@ function app() {
       var downcase = character == textarray[loc] ? false : true;
       
       if (this.alphabet.indexOf(character) != -1) {
-        var letter = this.encrypt[keyarray[kloc]][character];
+        var letter = this.enc[keyarray[kloc]][character];
         
         if (downcase) {
           letter = letter.toLowerCase();
@@ -144,6 +170,62 @@ function app() {
     }
     
     this.sinks['ciphertext'].innerHTML = ciphertext;
+  };
+  
+  this.turing = function() {
+    var textarray = this.sources['ciphertext'].value.toUpperCase().replace(/[^A-Z]/g, '').split('');
+    var width = this.sources['turing'].value.replace(/[^0-9]/g, '') == undefined ? 10 : parseInt(this.sources['turing'].value.replace(/[^0-9]/g, ''));
+    
+    this.sinks['turing'].innerHTML = '';
+    
+    this.tur = [];
+    for (var col = 0; col < width; col++) {
+      this.tur.push([]);
+    }
+    
+    for (var lid in this.alphabet) {
+      var letter = this.alphabet[lid];
+      this.sinks['turing'].innerHTML += letter + ': '; 
+      
+      for (var col = 0; col < width; col++) {
+        var place = col;
+        var evidence = 0;
+        while (place < textarray.length) {
+          var diff = ord(this.dec[letter][textarray[place]]) - ord('A');
+          evidence += this.bans[diff];
+          place += width;
+        }
+
+        evidence = parseInt(evidence);
+
+        if (evidence > 0) {
+          var spaces = Array(4 - evidence.toString().length).join(' ');
+
+          this.sinks['turing'].innerHTML += " " + spaces + evidence + " ";
+          this.tur[col].push(letter);
+        } else {
+          this.sinks['turing'].innerHTML += "   . ";
+        }
+      }
+      this.sinks['turing'].innerHTML += "\n";
+    }
+    
+    this.buildRegex();
+  };
+  
+  this.match = function() {
+    var regex = this.sources['match'].value.toString();
+    var re = new RegExp(regex, 'i');
+    var width = this.sources['turing'].value.replace(/[^0-9]/g, '') == undefined ? 10 : parseInt(this.sources['turing'].value.replace(/[^0-9]/g, ''));
+    this.sinks['match'].innerHTML = '';
+    
+    for (var loc in this.dictionary) {
+      if (this.dictionary[loc].length == width) {
+        if (this.dictionary[loc].match(re)) {
+          this.sinks['match'].innerHTML += ' ' + this.dictionary[loc];
+        }
+      }
+    }
   };
   
   this.eventHandleDecryption = function(event) {
@@ -166,22 +248,57 @@ function app() {
     this.buildTable();
   };
   
+  this.eventHandleTuring = function(event) {
+    if (this.sources['turing'].value.replace(/[^0-9]/g, '') != '' && this.sources['ciphertext'].value != '') {
+      this.turing();
+      this.match();
+    } else {
+      this.sinks['turing'].innerHTML = '&nbsp;';
+      this.sources['match'].value = '';
+      this.sinks['match'].innerHTML = '&nbsp;';
+    }
+  };
+  
+  this.eventHandleMatch = function(event) {
+    if (this.sources['match'].value != '') {
+      this.match();
+    } else {
+      this.sinks['match'].innerHTML = '&nbsp;';
+    }
+  };
+  
   this.bindEvents = function() {
     this.unbindEvents();
     
     this.sources['table'].addEventListener('change', this.eventHandleTable.bind(this));
+    
     this.sources['keyword'].addEventListener('change', this.eventHandleDecryption.bind(this));
     this.sources['ciphertext'].addEventListener('change', this.eventHandleDecryption.bind(this));
+    
     this.sources['keyword'].addEventListener('change', this.eventHandleEncryption.bind(this));
     this.sources['plaintext'].addEventListener('change', this.eventHandleEncryption.bind(this));
+    
+    this.sources['turing'].addEventListener('change', this.eventHandleTuring.bind(this));
+    this.sources['ciphertext'].addEventListener('change', this.eventHandleTuring.bind(this));
+    this.sources['keyword'].addEventListener('change', this.eventHandleTuring.bind(this));
+    
+    this.sources['match'].addEventListener('change', this.eventHandleMatch.bind(this));
   };
   
   this.unbindEvents = function() {
     this.sources['table'].removeEventListener('change', this.eventHandleTable.bind(this));
+    
     this.sources['keyword'].removeEventListener('change', this.eventHandleDecryption.bind(this));
     this.sources['ciphertext'].removeEventListener('change', this.eventHandleDecryption.bind(this));
+    
     this.sources['keyword'].removeEventListener('change', this.eventHandleEncryption.bind(this));
     this.sources['plaintext'].removeEventListener('change', this.eventHandleEncryption.bind(this));
+    
+    this.sources['turing'].removeEventListener('change', this.eventHandleTuring.bind(this));
+    this.sources['ciphertext'].removeEventListener('change', this.eventHandleTuring.bind(this));
+    this.sources['keyword'].removeEventListener('change', this.eventHandleTuring.bind(this));
+    
+    this.sources['match'].removeEventListener('change', this.eventHandleMatch.bind(this));
   };
   
   this.mapToObject = function(first, second) {

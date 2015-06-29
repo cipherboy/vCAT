@@ -42,7 +42,7 @@
     <section>
       <h3>Turing's Analysis</h3>
       <p>Guesses for length of message's keyword.</p>
-      <input id="source-length" placeholder="Keyword length" type="number" list="true" min="1" max="30" step="1" value="1">
+      <input id="source-length" placeholder="Keyword length" type="number" list="true" min="1" max="30" step="1">
       <pre id="sink-turings" onclick="selectText('sink-turings');">&nbsp;</pre>
     </section>
     <section>
@@ -58,8 +58,9 @@
       <pre id="sink-decrypted" onclick="selectText('sink-decrypted');">&nbsp;</pre>
     </section>
     <section id="encrypt">
+      <h2>Utilities</h2>
       <h3>Encrypt</h3>
-      <p>Enter a text below to encrypt using the keyword.</p>
+      <p>Enter a text below to encrypt using the above keyword.</p>
       <textarea id="source-plaintext" autocomplete="on" spellcheck="true" placeholder="Enter your plaintext here"></textarea>
       <pre id="sink-encrypted" onclick="selectText('sink-encrypted');">&nbsp;</pre>
     </section>
@@ -71,23 +72,8 @@
         Licensed under GPLv3.
       </p>
     </footer>
+    <script src="js/util.js"></script>
     <script src="js/app.js"></script>
-    <script type="text/javascript">
-      function selectText(containerid) {
-        var node = document.getElementById(containerid);
-
-        if (document.selection) {
-          var range = document.body.createTextRange();
-          range.moveToElementText(node);
-          range.select();
-        } else if (window.getSelection) {
-          var range = document.createRange();
-          range.selectNodeContents(node);
-          window.getSelection().removeAllRanges();
-          window.getSelection().addRange(range);
-        }
-      }
-    </script>
     <script>
       function ready(func) {
         if (document.readyState != 'loading'){
