@@ -47,3 +47,24 @@ function selectText(containerid) {
     window.getSelection().addRange(range);
   }
 }
+
+function mapToObject(first, second) {
+  if (first.length != second.length) {
+    throw "Length of arrays don't match.";
+  } else {
+    var ret = {};
+    for (var loc in first) {
+      ret[first[loc]] = second[loc];
+    }
+
+    return ret;
+  }
+}
+
+function cloneArray(initial) {
+  var ret = [];
+  for (var loc in initial) {
+    ret[loc] = initial[loc];
+  }
+  return ret;
+}
